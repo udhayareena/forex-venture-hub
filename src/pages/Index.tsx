@@ -1,6 +1,5 @@
-
 import { AuthForm } from "@/components/auth/AuthForm";
-import { ChevronRight, LineChart, Shield, Zap } from "lucide-react";
+import { ChevronRight, LineChart, Shield, Zap, Download, Monitor, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ForexChart } from "@/components/ForexChart";
 
@@ -57,6 +56,55 @@ const Index = () => {
       <section className="py-12 px-6 md:px-12 lg:px-24">
         <div className="max-w-7xl mx-auto">
           <ForexChart />
+        </div>
+      </section>
+
+      {/* MT4 Platforms Section */}
+      <section className="py-16 px-6 md:px-12 lg:px-24">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold">Download MT4 Trading Platforms</h2>
+            <p className="text-muted-foreground mt-4">
+              Access the markets from anywhere with our powerful trading platforms
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="glass p-6 rounded-2xl text-center">
+              <Monitor className="h-12 w-12 text-secondary mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-4">MT4 Desktop</h3>
+              <p className="text-muted-foreground mb-6">
+                Advanced trading platform for Windows
+              </p>
+              <Button className="w-full" variant="secondary">
+                <Download className="mr-2 h-4 w-4" /> Download for Windows
+              </Button>
+            </div>
+            <div className="glass p-6 rounded-2xl text-center">
+              <Monitor className="h-12 w-12 text-secondary mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-4">MT4 Web Terminal</h3>
+              <p className="text-muted-foreground mb-6">
+                Trade directly from your browser
+              </p>
+              <Button className="w-full" variant="secondary">
+                <Download className="mr-2 h-4 w-4" /> Launch WebTrader
+              </Button>
+            </div>
+            <div className="glass p-6 rounded-2xl text-center lg:col-span-1 md:col-span-2 lg:col-start-3">
+              <Phone className="h-12 w-12 text-secondary mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-4">MT4 Mobile</h3>
+              <p className="text-muted-foreground mb-6">
+                Trade on the go with our mobile apps
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <Button variant="secondary">
+                  <Download className="mr-2 h-4 w-4" /> iOS
+                </Button>
+                <Button variant="secondary">
+                  <Download className="mr-2 h-4 w-4" /> Android
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
