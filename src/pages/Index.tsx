@@ -19,6 +19,9 @@ const Index = () => {
                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
                   Welcome to iTradeFX
                 </h1>
+                <p className="text-xl font-medium text-secondary">
+                  Maximize Your Potential, Minimize Your Risk
+                </p>
                 <p className="text-lg text-muted-foreground">
                   Access global forex markets with advanced trading tools, real-time analytics, and expert insights.
                 </p>
