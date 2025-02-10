@@ -1,3 +1,4 @@
+
 import { AuthForm } from "@/components/auth/AuthForm";
 import { ChevronRight, LineChart, Shield, Zap, Download, Monitor, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,10 +14,10 @@ const Index = () => {
             <div className="space-y-8">
               <div className="space-y-4">
                 <span className="inline-block px-4 py-1 rounded-full bg-secondary/10 text-secondary text-sm font-medium">
-                  Professional Trading Platform
+                  iTradeFX - Professional Trading Platform
                 </span>
                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-                  Trade Forex with Confidence
+                  Welcome to iTradeFX
                 </h1>
                 <p className="text-lg text-muted-foreground">
                   Access global forex markets with advanced trading tools, real-time analytics, and expert insights.
