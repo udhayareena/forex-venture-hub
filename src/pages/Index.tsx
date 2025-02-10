@@ -2,6 +2,7 @@
 import { AuthForm } from "@/components/auth/AuthForm";
 import { ChevronRight, LineChart, Shield, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ForexChart } from "@/components/ForexChart";
 
 const Index = () => {
   return (
@@ -49,6 +50,13 @@ const Index = () => {
               <AuthForm />
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Chart Section */}
+      <section className="py-12 px-6 md:px-12 lg:px-24">
+        <div className="max-w-7xl mx-auto">
+          <ForexChart />
         </div>
       </section>
 
