@@ -9,6 +9,39 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      deposits: {
+        Row: {
+          amount: number
+          created_at: string | null
+          id: string
+          payment_method: string
+          status: string | null
+          transaction_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          id?: string
+          payment_method: string
+          status?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          id?: string
+          payment_method?: string
+          status?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       ITRADEFX: {
         Row: {
           created_at: string
@@ -51,6 +84,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_balances: {
+        Row: {
+          balance: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          balance?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          balance?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_verification: {
         Row: {
           address_proof_path: string | null
@@ -75,6 +126,48 @@ export type Database = {
           id_document_path?: string | null
           updated_at?: string | null
           verification_status?: string | null
+        }
+        Relationships: []
+      }
+      withdrawals: {
+        Row: {
+          amount: number
+          bank_details: Json | null
+          bank_statement_path: string | null
+          created_at: string | null
+          crypto_address: string | null
+          id: string
+          payment_method: string
+          status: string | null
+          updated_at: string | null
+          upi_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          bank_details?: Json | null
+          bank_statement_path?: string | null
+          created_at?: string | null
+          crypto_address?: string | null
+          id?: string
+          payment_method: string
+          status?: string | null
+          updated_at?: string | null
+          upi_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          bank_details?: Json | null
+          bank_statement_path?: string | null
+          created_at?: string | null
+          crypto_address?: string | null
+          id?: string
+          payment_method?: string
+          status?: string | null
+          updated_at?: string | null
+          upi_id?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
