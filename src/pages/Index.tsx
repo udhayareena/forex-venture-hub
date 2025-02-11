@@ -16,9 +16,16 @@ const Index = () => {
                 <span className="inline-block px-4 py-1 rounded-full bg-secondary/10 text-secondary text-sm font-medium">
                   iTradeFX - Professional Trading Platform
                 </span>
-                <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-                  Welcome to iTradeFX
-                </h1>
+                <div className="flex items-center gap-4 mb-4">
+                  <img 
+                    src="/lovable-uploads/54d3d90c-1c8e-4006-82de-078744600d13.png" 
+                    alt="iTradeFX Logo" 
+                    className="h-16 w-auto shadow-lg rounded-lg"
+                  />
+                  <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-secondary to-secondary/70">
+                    iTradeFX
+                  </h1>
+                </div>
                 <p className="text-xl font-medium text-secondary">
                   Maximize Your Potential, Minimize Your Risk
                 </p>
