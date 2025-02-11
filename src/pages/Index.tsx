@@ -1,10 +1,27 @@
-
 import { AuthForm } from "@/components/auth/AuthForm";
+import { DocumentVerification } from "@/components/DocumentVerification";
 import { ChevronRight, LineChart, Shield, Zap, Download, Monitor, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ForexChart } from "@/components/ForexChart";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+
+      supabase.auth.onAuthStateChange((event, session) => {
+        setIsAuthenticated(!!session);
+      });
+    };
+
+    checkAuth();
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero Section */}
@@ -57,102 +74,110 @@ const Index = () => {
               </div>
             </div>
             <div className="lg:pl-12">
-              <AuthForm />
+              {isAuthenticated ? (
+                <DocumentVerification />
+              ) : (
+                <AuthForm />
+              )}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Chart Section */}
-      <section className="py-12 px-6 md:px-12 lg:px-24">
-        <div className="max-w-7xl mx-auto">
-          <ForexChart />
-        </div>
-      </section>
+      {isAuthenticated && (
+        <>
+          {/* Chart Section */}
+          <section className="py-12 px-6 md:px-12 lg:px-24">
+            <div className="max-w-7xl mx-auto">
+              <ForexChart />
+            </div>
+          </section>
 
-      {/* MT4 Platforms Section */}
-      <section className="py-16 px-6 md:px-12 lg:px-24">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold">Download MT4 Trading Platforms</h2>
-            <p className="text-muted-foreground mt-4">
-              Access the markets from anywhere with our powerful trading platforms
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <div className="glass p-6 rounded-2xl text-center">
-              <Monitor className="h-12 w-12 text-secondary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-4">MT4 Desktop</h3>
-              <p className="text-muted-foreground mb-6">
-                Advanced trading platform for Windows
-              </p>
-              <Button className="w-full" variant="secondary">
-                <Download className="mr-2 h-4 w-4" /> Download for Windows
-              </Button>
-            </div>
-            <div className="glass p-6 rounded-2xl text-center">
-              <Monitor className="h-12 w-12 text-secondary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-4">MT4 Web Terminal</h3>
-              <p className="text-muted-foreground mb-6">
-                Trade directly from your browser
-              </p>
-              <Button className="w-full" variant="secondary">
-                <Download className="mr-2 h-4 w-4" /> Launch WebTrader
-              </Button>
-            </div>
-            <div className="glass p-6 rounded-2xl text-center lg:col-span-1 md:col-span-2 lg:col-start-3">
-              <Phone className="h-12 w-12 text-secondary mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-4">MT4 Mobile</h3>
-              <p className="text-muted-foreground mb-6">
-                Trade on the go with our mobile apps
-              </p>
-              <div className="grid grid-cols-2 gap-4">
-                <Button variant="secondary">
-                  <Download className="mr-2 h-4 w-4" /> iOS
-                </Button>
-                <Button variant="secondary">
-                  <Download className="mr-2 h-4 w-4" /> Android
-                </Button>
+          {/* MT4 Platforms Section */}
+          <section className="py-16 px-6 md:px-12 lg:px-24">
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold">Download MT4 Trading Platforms</h2>
+                <p className="text-muted-foreground mt-4">
+                  Access the markets from anywhere with our powerful trading platforms
+                </p>
+              </div>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="glass p-6 rounded-2xl text-center">
+                  <Monitor className="h-12 w-12 text-secondary mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-4">MT4 Desktop</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Advanced trading platform for Windows
+                  </p>
+                  <Button className="w-full" variant="secondary">
+                    <Download className="mr-2 h-4 w-4" /> Download for Windows
+                  </Button>
+                </div>
+                <div className="glass p-6 rounded-2xl text-center">
+                  <Monitor className="h-12 w-12 text-secondary mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-4">MT4 Web Terminal</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Trade directly from your browser
+                  </p>
+                  <Button className="w-full" variant="secondary">
+                    <Download className="mr-2 h-4 w-4" /> Launch WebTrader
+                  </Button>
+                </div>
+                <div className="glass p-6 rounded-2xl text-center lg:col-span-1 md:col-span-2 lg:col-start-3">
+                  <Phone className="h-12 w-12 text-secondary mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold mb-4">MT4 Mobile</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Trade on the go with our mobile apps
+                  </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <Button variant="secondary">
+                      <Download className="mr-2 h-4 w-4" /> iOS
+                    </Button>
+                    <Button variant="secondary">
+                      <Download className="mr-2 h-4 w-4" /> Android
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      {/* Features Section */}
-      <section className="py-20 px-6 md:px-12 lg:px-24 bg-muted">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold">Why Choose Us</h2>
-            <p className="text-muted-foreground mt-4">
-              Experience the advantages of trading with a trusted platform
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="glass p-6 rounded-2xl">
-              <LineChart className="h-10 w-10 text-secondary mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Advanced Analytics</h3>
-              <p className="text-muted-foreground">
-                Real-time market analysis and professional trading tools
-              </p>
+          {/* Features Section */}
+          <section className="py-20 px-6 md:px-12 lg:px-24 bg-muted">
+            <div className="max-w-7xl mx-auto">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold">Why Choose Us</h2>
+                <p className="text-muted-foreground mt-4">
+                  Experience the advantages of trading with a trusted platform
+                </p>
+              </div>
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="glass p-6 rounded-2xl">
+                  <LineChart className="h-10 w-10 text-secondary mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">Advanced Analytics</h3>
+                  <p className="text-muted-foreground">
+                    Real-time market analysis and professional trading tools
+                  </p>
+                </div>
+                <div className="glass p-6 rounded-2xl">
+                  <Shield className="h-10 w-10 text-secondary mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">Secure Trading</h3>
+                  <p className="text-muted-foreground">
+                    Industry-leading security measures to protect your assets
+                  </p>
+                </div>
+                <div className="glass p-6 rounded-2xl">
+                  <Zap className="h-10 w-10 text-secondary mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">Fast Execution</h3>
+                  <p className="text-muted-foreground">
+                    Lightning-fast trade execution with minimal slippage
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="glass p-6 rounded-2xl">
-              <Shield className="h-10 w-10 text-secondary mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Secure Trading</h3>
-              <p className="text-muted-foreground">
-                Industry-leading security measures to protect your assets
-              </p>
-            </div>
-            <div className="glass p-6 rounded-2xl">
-              <Zap className="h-10 w-10 text-secondary mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Fast Execution</h3>
-              <p className="text-muted-foreground">
-                Lightning-fast trade execution with minimal slippage
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        </>
+      )}
     </div>
   );
 };

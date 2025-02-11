@@ -51,6 +51,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_verification: {
+        Row: {
+          address_proof_path: string | null
+          created_at: string | null
+          id: string
+          id_document_path: string | null
+          updated_at: string | null
+          verification_status: string | null
+        }
+        Insert: {
+          address_proof_path?: string | null
+          created_at?: string | null
+          id: string
+          id_document_path?: string | null
+          updated_at?: string | null
+          verification_status?: string | null
+        }
+        Update: {
+          address_proof_path?: string | null
+          created_at?: string | null
+          id?: string
+          id_document_path?: string | null
+          updated_at?: string | null
+          verification_status?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
