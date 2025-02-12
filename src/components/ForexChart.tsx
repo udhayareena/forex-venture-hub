@@ -10,38 +10,12 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { supabase } from "@/integrations/supabase/client";
-
-const timeframes = [
-  { value: "M1", label: "1m" },
-  { value: "M5", label: "5m" },
-  { value: "M15", label: "15m" },
-  { value: "H1", label: "1h" },
-  { value: "H4", label: "4h" },
-  { value: "D", label: "1D" },
-  { value: "M", label: "1M" },
-  { value: "Y", label: "1Y" },
-];
 
 // Mock data generator for demo purposes
-const generateMockData = (timeframe: string) => {
+const generateMockData = () => {
   const basePrice = 1.2000;
-  const points = timeframe.startsWith('M') ? 20 : 
-                timeframe.startsWith('H') ? 24 : 
-                timeframe === 'D' ? 30 : 
-                timeframe === 'M' ? 30 : 12;
-                
-  const timeInterval = timeframe === 'M1' ? 60000 : 
-                      timeframe === 'M5' ? 300000 :
-                      timeframe === 'M15' ? 900000 :
-                      timeframe === 'H1' ? 3600000 :
-                      timeframe === 'H4' ? 14400000 :
-                      timeframe === 'D' ? 86400000 :
-                      timeframe === 'M' ? 2592000000 : 31536000000;
-
-  return Array.from({ length: points }, (_, i) => ({
-    time: new Date(Date.now() - (points - 1 - i) * timeInterval).toLocaleString(),
+  return Array.from({ length: 20 }, (_, i) => ({
+    time: new Date(Date.now() - (19 - i) * 60000).toLocaleTimeString(),
     price: (
       basePrice +
       Math.sin(i * 0.5) * 0.02 +
@@ -51,29 +25,15 @@ const generateMockData = (timeframe: string) => {
 };
 
 export const ForexChart = () => {
-  const [timeframe, setTimeframe] = useState("M1");
-  const [data, setData] = useState(() => generateMockData(timeframe));
+  const [data, setData] = useState(generateMockData());
 
   useEffect(() => {
-    const saveTimeframePreference = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      await supabase
-        .from('forex_preferences')
-        .upsert({ user_id: session.user.id, timeframe })
-        .select();
-    };
-
-    saveTimeframePreference();
-    setData(generateMockData(timeframe));
-
-    // Update chart based on timeframe
+    // Update chart every 5 seconds
     const interval = setInterval(() => {
       setData((prevData) => {
         const newData = [...prevData.slice(1)];
         newData.push({
-          time: new Date().toLocaleString(),
+          time: new Date().toLocaleTimeString(),
           price: (
             parseFloat(prevData[prevData.length - 1].price) +
             (Math.random() - 0.5) * 0.002
@@ -81,49 +41,15 @@ export const ForexChart = () => {
         });
         return newData;
       });
-    }, timeframe === 'M1' ? 5000 : 
-       timeframe === 'M5' ? 25000 :
-       timeframe === 'M15' ? 75000 : 300000);
+    }, 5000);
 
     return () => clearInterval(interval);
-  }, [timeframe]);
-
-  // Load user's preferred timeframe
-  useEffect(() => {
-    const loadTimeframePreference = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
-
-      const { data } = await supabase
-        .from('forex_preferences')
-        .select('timeframe')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (data?.timeframe) {
-        setTimeframe(data.timeframe);
-      }
-    };
-
-    loadTimeframePreference();
   }, []);
 
   return (
     <Card className="w-full glass">
-      <CardHeader className="space-y-4">
+      <CardHeader>
         <CardTitle>EUR/USD Live Chart</CardTitle>
-        <ToggleGroup 
-          type="single" 
-          value={timeframe} 
-          onValueChange={(value) => value && setTimeframe(value)}
-          className="justify-start"
-        >
-          {timeframes.map(({ value, label }) => (
-            <ToggleGroupItem key={value} value={value} aria-label={`${label} timeframe`}>
-              {label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
       </CardHeader>
       <CardContent>
         <div className="h-[400px] w-full">
@@ -162,4 +88,3 @@ export const ForexChart = () => {
     </Card>
   );
 };
-
