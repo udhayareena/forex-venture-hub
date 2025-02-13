@@ -65,18 +65,29 @@ export const DocumentVerification = () => {
 
       if (uploadError) throw uploadError;
 
+      // Auto-approve documents upon upload
+      const verificationData = {
+        id: userId,
+        [docType === 'id' ? 'id_document_path' : 'address_proof_path']: fileName,
+        verification_status: docType === 'id' && addressDocUploaded || docType === 'address' && idDocUploaded ? 'approved' : 'pending'
+      };
+
       const { error: updateError } = await supabase
         .from('user_verification')
-        .upsert({
-          id: userId,
-          [docType === 'id' ? 'id_document_path' : 'address_proof_path']: fileName,
-          verification_status: 'pending'
-        });
+        .upsert(verificationData);
 
       if (updateError) throw updateError;
 
       docType === 'id' ? setIdDocUploaded(true) : setAddressDocUploaded(true);
-      toast.success(`${docType === 'id' ? 'ID Document' : 'Address Proof'} uploaded successfully`);
+      
+      // If both documents are uploaded, set status to approved
+      if ((docType === 'id' && addressDocUploaded) || (docType === 'address' && idDocUploaded)) {
+        setVerificationStatus('approved');
+        toast.success("Documents verified successfully! You can now access the trading terminal.");
+      } else {
+        toast.success(`${docType === 'id' ? 'ID Document' : 'Address Proof'} uploaded successfully`);
+      }
+      
       checkVerificationStatus();
     } catch (error: any) {
       toast.error(error.message || "Error uploading document");
@@ -192,16 +203,7 @@ export const DocumentVerification = () => {
           <div className="flex items-center justify-center p-4 bg-yellow-50 rounded-lg">
             <AlertCircle className="text-yellow-500 mr-2" />
             <p className="text-sm text-yellow-700">
-              Your documents are under review. We'll notify you once verified.
-            </p>
-          </div>
-        )}
-
-        {verificationStatus === 'rejected' && (
-          <div className="flex items-center justify-center p-4 bg-red-50 rounded-lg">
-            <AlertCircle className="text-red-500 mr-2" />
-            <p className="text-sm text-red-700">
-              Verification failed. Please upload new documents.
+              Please upload both documents to access the trading terminal.
             </p>
           </div>
         )}
