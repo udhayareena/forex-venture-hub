@@ -1,6 +1,5 @@
 
 import { AuthForm } from "@/components/auth/AuthForm";
-import { DocumentVerification } from "@/components/DocumentVerification";
 import { ChevronRight, LineChart, Shield, Zap, Download, Monitor, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ForexChart } from "@/components/ForexChart";
@@ -12,22 +11,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [verificationStatus, setVerificationStatus] = useState<string | null>(null);
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsAuthenticated(!!session);
-
-      if (session) {
-        const { data } = await supabase
-          .from('user_verification')
-          .select('verification_status')
-          .eq('id', session.user.id)
-          .single();
-        
-        setVerificationStatus(data?.verification_status || null);
-      }
 
       supabase.auth.onAuthStateChange((event, session) => {
         setIsAuthenticated(!!session);
@@ -90,7 +78,16 @@ const Index = () => {
             </div>
             <div className="lg:pl-12">
               {isAuthenticated ? (
-                <DocumentVerification />
+                <div className="space-y-6">
+                  <div className="grid lg:grid-cols-2 gap-8 mb-8">
+                    <div>
+                      <BalanceDisplay />
+                      <DepositForm />
+                    </div>
+                    <WithdrawForm />
+                  </div>
+                  <ForexChart />
+                </div>
               ) : (
                 <AuthForm />
               )}
@@ -99,22 +96,8 @@ const Index = () => {
         </div>
       </section>
 
-      {isAuthenticated && verificationStatus === 'approved' && (
+      {isAuthenticated && (
         <>
-          {/* Trading Section */}
-          <section className="py-12 px-6 md:px-12 lg:px-24">
-            <div className="max-w-7xl mx-auto">
-              <div className="grid lg:grid-cols-2 gap-8 mb-8">
-                <div>
-                  <BalanceDisplay />
-                  <DepositForm />
-                </div>
-                <WithdrawForm />
-              </div>
-              <ForexChart />
-            </div>
-          </section>
-
           {/* MT4 Platforms Section */}
           <section className="py-16 px-6 md:px-12 lg:px-24">
             <div className="max-w-7xl mx-auto">
