@@ -23,7 +23,10 @@ export const DocumentVerification = () => {
   const checkVerificationStatus = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) {
+        toast.error("Please login to view verification status");
+        return;
+      }
 
       const { data, error } = await supabase
         .from("user_verification")
@@ -40,14 +43,19 @@ export const DocumentVerification = () => {
       }
     } catch (error: any) {
       console.error("Error checking verification status:", error);
+      toast.error("Failed to check verification status");
     }
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, docType: 'id' | 'address') => {
     try {
-      setLoading(true);
       const file = event.target.files?.[0];
-      if (!file) return;
+      if (!file) {
+        toast.error("Please select a file to upload");
+        return;
+      }
+
+      setLoading(true);
 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -59,22 +67,56 @@ export const DocumentVerification = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}/${docType}_${Date.now()}.${fileExt}`;
 
+      // First, ensure the storage bucket exists
+      const { data: bucketData, error: bucketError } = await supabase
+        .storage
+        .getBucket('verification_docs');
+
+      if (bucketError && bucketError.message.includes('does not exist')) {
+        await supabase.storage.createBucket('verification_docs', {
+          public: false,
+          fileSizeLimit: 5242880, // 5MB
+          allowedMimeTypes: ['image/*', 'application/pdf']
+        });
+      }
+
       const { error: uploadError } = await supabase.storage
         .from('verification_docs')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) throw uploadError;
 
-      // Auto-approve documents upon upload
+      // Check if a record already exists
+      const { data: existingRecord } = await supabase
+        .from('user_verification')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
       const verificationData = {
         id: userId,
         [docType === 'id' ? 'id_document_path' : 'address_proof_path']: fileName,
         verification_status: docType === 'id' && addressDocUploaded || docType === 'address' && idDocUploaded ? 'approved' : 'pending'
       };
 
-      const { error: updateError } = await supabase
-        .from('user_verification')
-        .upsert(verificationData);
+      let updateError;
+      if (existingRecord) {
+        // Update existing record
+        const { error } = await supabase
+          .from('user_verification')
+          .update(verificationData)
+          .eq('id', userId);
+        updateError = error;
+      } else {
+        // Insert new record
+        const { error } = await supabase
+          .from('user_verification')
+          .insert([verificationData]);
+        updateError = error;
+      }
 
       if (updateError) throw updateError;
 
@@ -88,8 +130,9 @@ export const DocumentVerification = () => {
         toast.success(`${docType === 'id' ? 'ID Document' : 'Address Proof'} uploaded successfully`);
       }
       
-      checkVerificationStatus();
+      await checkVerificationStatus();
     } catch (error: any) {
+      console.error("Upload error:", error);
       toast.error(error.message || "Error uploading document");
     } finally {
       setLoading(false);
