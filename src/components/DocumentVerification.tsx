@@ -6,6 +6,9 @@ import { Upload, FileCheck2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ForexChart } from "@/components/ForexChart";
+import { BalanceDisplay } from "@/components/trading/BalanceDisplay";
+import { DepositForm } from "@/components/trading/DepositForm";
+import { WithdrawForm } from "@/components/trading/WithdrawForm";
 
 export const DocumentVerification = () => {
   const [verificationStatus, setVerificationStatus] = useState<string>("pending");
@@ -91,6 +94,15 @@ export const DocumentVerification = () => {
             <h2 className="text-xl font-semibold">Verification Approved</h2>
           </div>
         </Card>
+        
+        <div className="grid lg:grid-cols-2 gap-8">
+          <div>
+            <BalanceDisplay />
+            <DepositForm />
+          </div>
+          <WithdrawForm />
+        </div>
+        
         <ForexChart />
       </div>
     );

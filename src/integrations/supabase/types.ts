@@ -123,9 +123,31 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_verification: {
         Row: {
           address_proof_path: string | null
+          admin_notes: string | null
           created_at: string | null
           id: string
           id_document_path: string | null
@@ -134,6 +156,7 @@ export type Database = {
         }
         Insert: {
           address_proof_path?: string | null
+          admin_notes?: string | null
           created_at?: string | null
           id: string
           id_document_path?: string | null
@@ -142,6 +165,7 @@ export type Database = {
         }
         Update: {
           address_proof_path?: string | null
+          admin_notes?: string | null
           created_at?: string | null
           id?: string
           id_document_path?: string | null
