@@ -15,10 +15,12 @@ export const BalanceDisplay = () => {
         .from('user_balances')
         .select('balance')
         .eq('user_id', session.user.id)
-        .single();
+        .maybeSingle();
 
       if (data) {
-        setBalance(data.balance);
+        setBalance(data.balance || 0);
+      } else if (error) {
+        console.error('Error fetching balance:', error);
       }
     };
 
@@ -32,4 +34,3 @@ export const BalanceDisplay = () => {
     </Card>
   );
 };
-
