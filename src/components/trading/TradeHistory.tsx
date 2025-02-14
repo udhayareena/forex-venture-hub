@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 
 interface Trade {
   id: string;
@@ -16,7 +17,11 @@ interface Trade {
   profit_loss: number | null;
 }
 
-export const TradeHistory = () => {
+interface TradeHistoryProps {
+  onClosePosition: (tradeId: string) => void;
+}
+
+export const TradeHistory = ({ onClosePosition }: TradeHistoryProps) => {
   const [trades, setTrades] = useState<Trade[]>([]);
 
   useEffect(() => {
@@ -40,7 +45,6 @@ export const TradeHistory = () => {
 
     fetchTrades();
 
-    // Subscribe to real-time updates
     const channel = supabase
       .channel('trades-changes')
       .on(
@@ -64,37 +68,44 @@ export const TradeHistory = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Trade History</CardTitle>
+        <CardTitle>Open Positions</CardTitle>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[300px]">
+        <ScrollArea className="h-[400px]">
           <div className="space-y-4">
-            {trades.map((trade) => (
-              <div
-                key={trade.id}
-                className="flex items-center justify-between p-2 rounded-lg bg-card/50"
-              >
-                <div>
-                  <p className="font-medium">{trade.currency_pair}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(trade.created_at).toLocaleString()}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className={`font-medium ${trade.type === 'buy' ? 'text-green-500' : 'text-red-500'}`}>
-                    {trade.type.toUpperCase()} @ {trade.price}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Amount: {trade.amount}
-                  </p>
-                  {trade.status === 'closed' && trade.profit_loss !== null && (
-                    <p className={`text-sm ${Number(trade.profit_loss) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      P/L: {Number(trade.profit_loss).toFixed(2)}
+            {trades
+              .filter(trade => trade.status === 'open')
+              .map((trade) => (
+                <div
+                  key={trade.id}
+                  className="flex items-center justify-between p-2 rounded-lg bg-card/50"
+                >
+                  <div>
+                    <p className="font-medium">{trade.currency_pair}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(trade.created_at).toLocaleString()}
                     </p>
-                  )}
+                  </div>
+                  <div className="text-right">
+                    <p className={`font-medium ${trade.type === 'buy' ? 'text-green-500' : 'text-red-500'}`}>
+                      {trade.type.toUpperCase()} @ {trade.price}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Amount: {trade.amount}
+                    </p>
+                    {trade.status === 'open' && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onClosePosition(trade.id)}
+                        className="mt-2"
+                      >
+                        Close Position
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
         </ScrollArea>
       </CardContent>

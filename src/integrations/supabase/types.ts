@@ -16,6 +16,7 @@ export type Database = {
           display_name: string
           id: string
           is_active: boolean | null
+          pip_value: number | null
           quote_currency: string
           symbol: string
         }
@@ -25,6 +26,7 @@ export type Database = {
           display_name: string
           id?: string
           is_active?: boolean | null
+          pip_value?: number | null
           quote_currency: string
           symbol: string
         }
@@ -34,6 +36,7 @@ export type Database = {
           display_name?: string
           id?: string
           is_active?: boolean | null
+          pip_value?: number | null
           quote_currency?: string
           symbol?: string
         }
@@ -143,6 +146,7 @@ export type Database = {
           created_at: string | null
           currency_pair: string
           id: string
+          margin_requirement: number | null
           price: number
           profit_loss: number | null
           status: string | null
@@ -157,6 +161,7 @@ export type Database = {
           created_at?: string | null
           currency_pair: string
           id?: string
+          margin_requirement?: number | null
           price: number
           profit_loss?: number | null
           status?: string | null
@@ -171,6 +176,7 @@ export type Database = {
           created_at?: string | null
           currency_pair?: string
           id?: string
+          margin_requirement?: number | null
           price?: number
           profit_loss?: number | null
           status?: string | null
@@ -183,17 +189,23 @@ export type Database = {
       user_balances: {
         Row: {
           balance: number | null
+          equity: number | null
           updated_at: string | null
+          used_margin: number | null
           user_id: string
         }
         Insert: {
           balance?: number | null
+          equity?: number | null
           updated_at?: string | null
+          used_margin?: number | null
           user_id: string
         }
         Update: {
           balance?: number | null
+          equity?: number | null
           updated_at?: string | null
+          used_margin?: number | null
           user_id?: string
         }
         Relationships: []
