@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      currency_pairs: {
+        Row: {
+          base_currency: string
+          created_at: string | null
+          display_name: string
+          id: string
+          is_active: boolean | null
+          quote_currency: string
+          symbol: string
+        }
+        Insert: {
+          base_currency: string
+          created_at?: string | null
+          display_name: string
+          id?: string
+          is_active?: boolean | null
+          quote_currency: string
+          symbol: string
+        }
+        Update: {
+          base_currency?: string
+          created_at?: string | null
+          display_name?: string
+          id?: string
+          is_active?: boolean | null
+          quote_currency?: string
+          symbol?: string
+        }
+        Relationships: []
+      }
       deposits: {
         Row: {
           amount: number
@@ -102,6 +132,51 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      trades: {
+        Row: {
+          amount: number
+          closed_at: string | null
+          closing_price: number | null
+          created_at: string | null
+          currency_pair: string
+          id: string
+          price: number
+          profit_loss: number | null
+          status: string | null
+          total_value: number
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          closed_at?: string | null
+          closing_price?: number | null
+          created_at?: string | null
+          currency_pair: string
+          id?: string
+          price: number
+          profit_loss?: number | null
+          status?: string | null
+          total_value: number
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          closed_at?: string | null
+          closing_price?: number | null
+          created_at?: string | null
+          currency_pair?: string
+          id?: string
+          price?: number
+          profit_loss?: number | null
+          status?: string | null
+          total_value?: number
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }
