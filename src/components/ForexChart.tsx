@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from "react";
 import {
-  LineChart,
-  Line,
+  ComposedChart,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  CandlestickChart,
-  Candlestick,
+  Bar,
+  Rectangle,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -38,6 +37,34 @@ const timeframes = [
 type CurrencyPair = {
   symbol: string;
   display_name: string;
+};
+
+const CustomCandlestick = (props: any) => {
+  const { x, y, width, height, low, high, open, close } = props;
+  const isGreen = close > open;
+  const color = isGreen ? "#4ade80" : "#ef4444";
+  const bodyHeight = Math.abs(open - close);
+  const bodyY = Math.min(open, close);
+
+  return (
+    <g>
+      <line
+        x1={x + width / 2}
+        y1={y + height - (height * (high - low))}
+        x2={x + width / 2}
+        y2={y + height}
+        stroke={color}
+        strokeWidth={1}
+      />
+      <rect
+        x={x}
+        y={y + height - (height * (bodyY - low)) - (height * bodyHeight)}
+        width={width}
+        height={Math.max(1, height * bodyHeight)}
+        fill={color}
+      />
+    </g>
+  );
 };
 
 export const ForexChart = () => {
@@ -136,7 +163,7 @@ export const ForexChart = () => {
   };
 
   const handleClosePosition = async (tradeId: string) => {
-    const currentPrice = parseFloat(data[data.length - 1].price);
+    const currentPrice = parseFloat(data[data.length - 1].close);
     
     const { error } = await supabase
       .from('trades')
@@ -174,7 +201,7 @@ export const ForexChart = () => {
     }
 
     const tradeAmount = parseFloat(amount);
-    const currentPrice = parseFloat(data[data.length - 1].price);
+    const currentPrice = parseFloat(data[data.length - 1].close);
     const requiredBalance = tradeAmount * currentPrice;
 
     if (tradeAmount < 0.01) {
@@ -305,7 +332,7 @@ export const ForexChart = () => {
             <CardContent>
               <div className="h-[600px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <CandlestickChart data={data}>
+                  <ComposedChart data={data}>
                     <CartesianGrid strokeDasharray="3 3" className="opacity-50" />
                     <XAxis
                       dataKey="time"
@@ -323,14 +350,22 @@ export const ForexChart = () => {
                         backgroundColor: "rgba(255, 255, 255, 0.9)",
                         border: "1px solid #ccc",
                       }}
+                      formatter={(value: any) => parseFloat(value).toFixed(4)}
                     />
-                    <Candlestick
-                      fill="#33c589"
-                      stroke="#007664"
-                      wickStroke="#007664"
-                      yAccessor={(d) => [d.open, d.high, d.low, d.close]}
+                    <Bar
+                      dataKey="height"
+                      fill="none"
+                      shape={<CustomCandlestick />}
+                      data={data.map(d => ({
+                        ...d,
+                        height: 1,
+                        low: parseFloat(d.low),
+                        high: parseFloat(d.high),
+                        open: parseFloat(d.open),
+                        close: parseFloat(d.close),
+                      }))}
                     />
-                  </CandlestickChart>
+                  </ComposedChart>
                 </ResponsiveContainer>
               </div>
               <div className="mt-6 grid grid-cols-2 gap-4">
