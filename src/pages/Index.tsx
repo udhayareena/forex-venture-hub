@@ -4,8 +4,6 @@ import { ChevronRight, LineChart, Shield, Zap, Download, Monitor, Phone } from "
 import { Button } from "@/components/ui/button";
 import { ForexChart } from "@/components/ForexChart";
 import { BalanceDisplay } from "@/components/trading/BalanceDisplay";
-import { DepositForm } from "@/components/trading/DepositForm";
-import { WithdrawForm } from "@/components/trading/WithdrawForm";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -28,71 +26,70 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Hero Section */}
-      <section className="relative py-20 px-6 md:px-12 lg:px-24">
+      <section className="py-8 px-6 md:px-12 lg:px-24 bg-secondary/5">
         <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <span className="inline-block px-4 py-1 rounded-full bg-secondary/10 text-secondary text-sm font-medium">
-                  iTradeFX - Professional Trading Platform
-                </span>
-                <div className="flex items-center gap-4 mb-4">
-                  <img 
-                    src="/lovable-uploads/54d3d90c-1c8e-4006-82de-078744600d13.png" 
-                    alt="iTradeFX Logo" 
-                    className="h-16 w-auto shadow-lg rounded-lg"
-                  />
-                  <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-secondary to-secondary/70">
-                    iTradeFX
-                  </h1>
-                </div>
-                <p className="text-xl font-medium text-secondary">
-                  Maximize Your Potential, Minimize Your Risk
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <img 
+                src="/lovable-uploads/54d3d90c-1c8e-4006-82de-078744600d13.png" 
+                alt="iTradeFX Logo" 
+                className="h-12 w-auto shadow-lg rounded-lg"
+              />
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-secondary to-secondary/70">
+                  iTradeFX
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Professional Trading Platform
                 </p>
-                <p className="text-lg text-muted-foreground">
-                  Access global forex markets with advanced trading tools, real-time analytics, and expert insights.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-4">
-                <Button size="lg" className="bg-secondary hover:bg-secondary/90">
-                  Start Trading <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-                <Button size="lg" variant="outline">
-                  Learn More
-                </Button>
-              </div>
-              <div className="grid grid-cols-3 gap-4 pt-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold">24/7</div>
-                  <div className="text-sm text-muted-foreground">Market Access</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">0.01%</div>
-                  <div className="text-sm text-muted-foreground">Low Spread</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold">100+</div>
-                  <div className="text-sm text-muted-foreground">Currency Pairs</div>
-                </div>
               </div>
             </div>
-            <div className="lg:pl-12">
-              {isAuthenticated ? (
-                <div className="space-y-6">
-                  <div className="grid lg:grid-cols-2 gap-8 mb-8">
-                    <div>
-                      <BalanceDisplay />
-                      <DepositForm />
-                    </div>
-                    <WithdrawForm />
-                  </div>
-                  <ForexChart />
-                </div>
-              ) : (
-                <AuthForm />
+            <div className="flex items-center gap-4">
+              <BalanceDisplay />
+              {!isAuthenticated && (
+                <Button size="sm" className="bg-secondary hover:bg-secondary/90">
+                  Start Trading <ChevronRight className="ml-2 h-4 w-4" />
+                </Button>
               )}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Main Content Section */}
+      <section className="py-8 px-6 md:px-12 lg:px-24">
+        <div className="max-w-7xl mx-auto">
+          {isAuthenticated ? (
+            <ForexChart />
+          ) : (
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div className="space-y-8">
+                <div className="space-y-4">
+                  <p className="text-xl font-medium text-secondary">
+                    Maximize Your Potential, Minimize Your Risk
+                  </p>
+                  <p className="text-lg text-muted-foreground">
+                    Access global forex markets with advanced trading tools, real-time analytics, and expert insights.
+                  </p>
+                </div>
+                <div className="grid grid-cols-3 gap-4 pt-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">24/7</div>
+                    <div className="text-sm text-muted-foreground">Market Access</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">0.01%</div>
+                    <div className="text-sm text-muted-foreground">Low Spread</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold">100+</div>
+                    <div className="text-sm text-muted-foreground">Currency Pairs</div>
+                  </div>
+                </div>
+              </div>
+              <AuthForm />
+            </div>
+          )}
         </div>
       </section>
 
