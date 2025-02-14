@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   ComposedChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -8,6 +9,7 @@ import {
   ResponsiveContainer,
   Bar,
   Rectangle,
+  Brush,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -21,7 +23,7 @@ import { TradeHistory } from "@/components/trading/TradeHistory";
 import { DepositForm } from "@/components/trading/DepositForm";
 import { WithdrawForm } from "@/components/trading/WithdrawForm";
 import { useToast } from "@/hooks/use-toast";
-import { Plus } from "lucide-react";
+import { Plus, ZoomIn, ZoomOut } from "lucide-react";
 
 const timeframes = [
   { value: "M1", label: "1m" },
@@ -68,6 +70,8 @@ const CustomCandlestick = (props: any) => {
 };
 
 export const ForexChart = () => {
+  const [chartType, setChartType] = useState<'candlestick' | 'line'>('candlestick');
+  const [zoomDomain, setZoomDomain] = useState<[number, number] | null>(null);
   const [timeframe, setTimeframe] = useState("M1");
   const [data, setData] = useState(() => generateMockData(timeframe));
   const [currencyPairs, setCurrencyPairs] = useState<CurrencyPair[]>([]);
@@ -257,6 +261,34 @@ export const ForexChart = () => {
     });
   };
 
+  const handleZoomIn = () => {
+    const dataLength = data.length;
+    if (!zoomDomain) {
+      setZoomDomain([Math.floor(dataLength * 0.25), Math.floor(dataLength * 0.75)]);
+    } else {
+      const range = zoomDomain[1] - zoomDomain[0];
+      const newRange = Math.max(10, Math.floor(range * 0.5));
+      const center = Math.floor((zoomDomain[0] + zoomDomain[1]) / 2);
+      setZoomDomain([
+        Math.max(0, center - Math.floor(newRange / 2)),
+        Math.min(dataLength - 1, center + Math.floor(newRange / 2))
+      ]);
+    }
+  };
+
+  const handleZoomOut = () => {
+    const dataLength = data.length;
+    if (!zoomDomain) return;
+    
+    const range = zoomDomain[1] - zoomDomain[0];
+    const newRange = Math.min(dataLength, range * 2);
+    const center = Math.floor((zoomDomain[0] + zoomDomain[1]) / 2);
+    setZoomDomain([
+      Math.max(0, center - Math.floor(newRange / 2)),
+      Math.min(dataLength - 1, center + Math.floor(newRange / 2))
+    ]);
+  };
+
   return (
     <div className="grid grid-cols-1 gap-8">
       <div className="grid grid-cols-12 gap-4">
@@ -278,42 +310,18 @@ export const ForexChart = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="icon">
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <DialogHeader>
-                        <DialogTitle>Add Currency Pair</DialogTitle>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        <div>
-                          <Label>Symbol (e.g., EURUSD)</Label>
-                          <Input
-                            value={newPair.symbol}
-                            onChange={(e) => setNewPair({ ...newPair, symbol: e.target.value })}
-                          />
-                        </div>
-                        <div>
-                          <Label>Base Currency (e.g., EUR)</Label>
-                          <Input
-                            value={newPair.baseCurrency}
-                            onChange={(e) => setNewPair({ ...newPair, baseCurrency: e.target.value })}
-                          />
-                        </div>
-                        <div>
-                          <Label>Quote Currency (e.g., USD)</Label>
-                          <Input
-                            value={newPair.quoteCurrency}
-                            onChange={(e) => setNewPair({ ...newPair, quoteCurrency: e.target.value })}
-                          />
-                        </div>
-                        <Button onClick={handleAddPair}>Add Pair</Button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
+                  <ToggleGroup type="single" value={chartType} onValueChange={(value: 'candlestick' | 'line') => value && setChartType(value)}>
+                    <ToggleGroupItem value="candlestick">Candlestick</ToggleGroupItem>
+                    <ToggleGroupItem value="line">Line</ToggleGroupItem>
+                  </ToggleGroup>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="icon" onClick={handleZoomIn}>
+                      <ZoomIn className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="icon" onClick={handleZoomOut}>
+                      <ZoomOut className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
               <ToggleGroup 
@@ -352,18 +360,36 @@ export const ForexChart = () => {
                       }}
                       formatter={(value: any) => parseFloat(value).toFixed(4)}
                     />
-                    <Bar
-                      dataKey="height"
-                      fill="none"
-                      shape={<CustomCandlestick />}
-                      data={data.map(d => ({
-                        ...d,
-                        height: 1,
-                        low: parseFloat(d.low),
-                        high: parseFloat(d.high),
-                        open: parseFloat(d.open),
-                        close: parseFloat(d.close),
-                      }))}
+                    {chartType === 'candlestick' ? (
+                      <Bar
+                        dataKey="height"
+                        fill="none"
+                        shape={<CustomCandlestick />}
+                        data={data.map(d => ({
+                          ...d,
+                          height: 1,
+                          low: parseFloat(d.low),
+                          high: parseFloat(d.high),
+                          open: parseFloat(d.open),
+                          close: parseFloat(d.close),
+                        }))}
+                      />
+                    ) : (
+                      <Line
+                        type="monotone"
+                        dataKey="close"
+                        stroke="#2563eb"
+                        dot={false}
+                        strokeWidth={2}
+                      />
+                    )}
+                    <Brush
+                      dataKey="time"
+                      height={30}
+                      stroke="#8884d8"
+                      startIndex={zoomDomain ? zoomDomain[0] : undefined}
+                      endIndex={zoomDomain ? zoomDomain[1] : undefined}
+                      onChange={(domain) => setZoomDomain([domain.startIndex, domain.endIndex])}
                     />
                   </ComposedChart>
                 </ResponsiveContainer>

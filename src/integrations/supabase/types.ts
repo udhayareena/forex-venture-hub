@@ -48,6 +48,7 @@ export type Database = {
           created_at: string | null
           id: string
           payment_method: string
+          qr_code_url: string | null
           status: string | null
           transaction_id: string | null
           updated_at: string | null
@@ -58,6 +59,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           payment_method: string
+          qr_code_url?: string | null
           status?: string | null
           transaction_id?: string | null
           updated_at?: string | null
@@ -68,6 +70,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           payment_method?: string
+          qr_code_url?: string | null
           status?: string | null
           transaction_id?: string | null
           updated_at?: string | null
@@ -108,6 +111,27 @@ export type Database = {
         Update: {
           created_at?: string
           id?: number
+        }
+        Relationships: []
+      }
+      platform_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          payment_qr_code: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          payment_qr_code: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          payment_qr_code?: string
+          updated_at?: string | null
         }
         Relationships: []
       }

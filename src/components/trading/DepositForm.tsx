@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -7,12 +7,29 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 export const DepositForm = () => {
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "crypto">("upi");
   const [transactionId, setTransactionId] = useState("");
   const [loading, setLoading] = useState(false);
+  const [qrCode, setQrCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchQrCode = async () => {
+      const { data, error } = await supabase
+        .from('platform_settings')
+        .select('payment_qr_code')
+        .single();
+
+      if (data) {
+        setQrCode(data.payment_qr_code);
+      }
+    };
+
+    fetchQrCode();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +49,7 @@ export const DepositForm = () => {
           amount: parseFloat(amount),
           payment_method: paymentMethod,
           transaction_id: transactionId,
+          qr_code_url: qrCode
         });
 
       if (error) throw error;
@@ -67,6 +85,24 @@ export const DepositForm = () => {
             </div>
           </RadioGroup>
         </div>
+
+        {qrCode && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button type="button" variant="outline" className="w-full">
+                View Payment QR Code
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Scan QR Code to Pay</DialogTitle>
+              </DialogHeader>
+              <div className="flex justify-center p-4">
+                <img src={qrCode} alt="Payment QR Code" className="max-w-full h-auto" />
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
 
         <div>
           <Label htmlFor="amount">Amount</Label>
