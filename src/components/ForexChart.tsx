@@ -38,7 +38,8 @@ export const ForexChart = () => {
   const [data, setData] = useState(() => generateMockData(timeframe));
   const [currencyPairs, setCurrencyPairs] = useState<CurrencyPair[]>([]);
   const [selectedPair, setSelectedPair] = useState("EUR/USD");
-  const [amount, setAmount] = useState("1000");
+  const [amount, setAmount] = useState("0.01");
+  const [userBalance, setUserBalance] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -57,6 +58,43 @@ export const ForexChart = () => {
     };
 
     fetchCurrencyPairs();
+  }, []);
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data } = await supabase
+        .from('user_balances')
+        .select('balance')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (data) {
+        setUserBalance(data.balance || 0);
+      }
+    };
+
+    fetchBalance();
+    const channel = supabase
+      .channel('balance_updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_balances',
+        },
+        () => {
+          fetchBalance();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
@@ -103,13 +141,32 @@ export const ForexChart = () => {
       return;
     }
 
-    const currentPrice = parseFloat(data[data.length - 1].price);
     const tradeAmount = parseFloat(amount);
+    const currentPrice = parseFloat(data[data.length - 1].price);
+    const requiredBalance = tradeAmount * currentPrice;
 
-    if (isNaN(tradeAmount) || tradeAmount <= 0) {
+    if (tradeAmount < 0.01) {
       toast({
         title: "Invalid amount",
-        description: "Please enter a valid trade amount",
+        description: "Minimum trade size is 0.01 lots",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (requiredBalance < 2.50) {
+      toast({
+        title: "Invalid amount",
+        description: "Minimum trade value is $2.50",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (requiredBalance > userBalance) {
+      toast({
+        title: "Insufficient balance",
+        description: "Not enough balance to place this trade",
         variant: "destructive",
       });
       return;
@@ -142,8 +199,8 @@ export const ForexChart = () => {
   };
 
   return (
-    <div className="grid lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2">
+    <div className="grid grid-cols-1 gap-8">
+      <div className="w-full">
         <Card className="w-full glass">
           <CardHeader className="space-y-4">
             <div className="flex items-center justify-between">
@@ -175,7 +232,7 @@ export const ForexChart = () => {
             </ToggleGroup>
           </CardHeader>
           <CardContent>
-            <div className="h-[400px] w-full">
+            <div className="h-[600px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-50" />
@@ -215,9 +272,11 @@ export const ForexChart = () => {
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="Amount"
                   className="w-32"
+                  min="0.01"
+                  step="0.01"
                 />
                 <span className="text-sm text-muted-foreground">
-                  Units
+                  Lots (min: 0.01)
                 </span>
               </div>
               <div className="flex justify-end gap-4">
