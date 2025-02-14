@@ -4,17 +4,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-type Trade = {
+interface Trade {
   id: string;
   currency_pair: string;
-  type: 'buy' | 'sell';
+  type: string;
   amount: number;
   price: number;
   total_value: number;
-  status: 'open' | 'closed';
+  status: string;
   created_at: string;
-  profit_loss?: number;
-};
+  profit_loss: number | null;
+}
 
 export const TradeHistory = () => {
   const [trades, setTrades] = useState<Trade[]>([]);
