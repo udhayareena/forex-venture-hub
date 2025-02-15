@@ -10,6 +10,7 @@ import {
   Bar,
   Rectangle,
   Brush,
+  ReferenceLine,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -81,6 +82,9 @@ export const ForexChart = () => {
   const [equity, setEquity] = useState(0);
   const [usedMargin, setUsedMargin] = useState(0);
   const [newPair, setNewPair] = useState({ symbol: "", baseCurrency: "", quoteCurrency: "" });
+  const [currentPrice, setCurrentPrice] = useState<number>(0);
+  const [openPositions, setOpenPositions] = useState<any[]>([]);
+  const [totalPnL, setTotalPnL] = useState<number>(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -132,6 +136,39 @@ export const ForexChart = () => {
         () => {
           fetchBalanceAndMargin();
         }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  useEffect(() => {
+    const fetchOpenPositions = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data: positions } = await supabase
+        .from('trades')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .eq('status', 'open');
+
+      if (positions) {
+        setOpenPositions(positions);
+        setUsedMargin(positions.reduce((sum, pos) => sum + (pos.total_value * 0.01), 0));
+      }
+    };
+
+    fetchOpenPositions();
+
+    const channel = supabase
+      .channel('trading_updates')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'trades' },
+        fetchOpenPositions
       )
       .subscribe();
 
@@ -289,6 +326,28 @@ export const ForexChart = () => {
     ]);
   };
 
+  const fetchRealtimeData = async () => {
+    const lastPrice = parseFloat(data[data.length - 1].close);
+    setCurrentPrice(lastPrice);
+    
+    const updatedPositions = openPositions.map(position => {
+      const pnl = position.type === 'buy' 
+        ? (lastPrice - position.price) * position.amount * 100000
+        : (position.price - lastPrice) * position.amount * 100000;
+      return { ...position, currentPnL: pnl };
+    });
+    
+    setOpenPositions(updatedPositions);
+    setTotalPnL(updatedPositions.reduce((sum, pos) => sum + pos.currentPnL, 0));
+    
+    setEquity(userBalance + totalPnL);
+  };
+
+  useEffect(() => {
+    const interval = setInterval(fetchRealtimeData, 1000);
+    return () => clearInterval(interval);
+  }, [openPositions, data]);
+
   return (
     <div className="grid grid-cols-1 gap-8">
       <div className="grid grid-cols-12 gap-4">
@@ -296,7 +355,12 @@ export const ForexChart = () => {
           <Card className="w-full glass">
             <CardHeader className="space-y-4">
               <div className="flex items-center justify-between">
-                <CardTitle>Live Chart</CardTitle>
+                <div className="flex items-center gap-4">
+                  <CardTitle>Live Chart</CardTitle>
+                  <span className="text-2xl font-bold text-primary">
+                    {currentPrice.toFixed(4)}
+                  </span>
+                </div>
                 <div className="flex items-center gap-4">
                   <Select value={selectedPair} onValueChange={setSelectedPair}>
                     <SelectTrigger className="w-[180px]">
@@ -391,6 +455,24 @@ export const ForexChart = () => {
                       endIndex={zoomDomain ? zoomDomain[1] : undefined}
                       onChange={(domain) => setZoomDomain([domain.startIndex, domain.endIndex])}
                     />
+                    <ReferenceLine
+                      y={currentPrice}
+                      stroke="#2563eb"
+                      strokeDasharray="3 3"
+                      label={{ value: 'Current Price', position: 'right' }}
+                    />
+                    {openPositions.map((position, index) => (
+                      <ReferenceLine
+                        key={position.id}
+                        y={position.price}
+                        stroke={position.type === 'buy' ? "#4ade80" : "#ef4444"}
+                        strokeDasharray="3 3"
+                        label={{ 
+                          value: `${position.type.toUpperCase()} @ ${position.price}`, 
+                          position: 'left' 
+                        }}
+                      />
+                    ))}
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -414,6 +496,7 @@ export const ForexChart = () => {
                     variant="outline"
                     className="w-24 bg-red-500/10 hover:bg-red-500/20 text-red-500"
                     onClick={() => handleTrade('sell')}
+                    disabled={parseFloat(amount) * currentPrice < 2.50}
                   >
                     Sell
                   </Button>
@@ -421,6 +504,7 @@ export const ForexChart = () => {
                     variant="outline"
                     className="w-24 bg-green-500/10 hover:bg-green-500/20 text-green-500"
                     onClick={() => handleTrade('buy')}
+                    disabled={parseFloat(amount) * currentPrice < 2.50}
                   >
                     Buy
                   </Button>
@@ -436,6 +520,12 @@ export const ForexChart = () => {
               <div className="flex justify-between">
                 <span>Balance:</span>
                 <span className="font-medium">${userBalance.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Floating P/L:</span>
+                <span className={`font-medium ${totalPnL >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                  ${totalPnL.toFixed(2)}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Equity:</span>
