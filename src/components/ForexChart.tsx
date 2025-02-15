@@ -411,7 +411,7 @@ export const ForexChart = () => {
   return <div className="grid grid-cols-1 gap-8">
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-9">
-          <Card className="w-full glass">
+          <Card className="w-full glass bg-zinc-50">
             <CardHeader className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -454,7 +454,7 @@ export const ForexChart = () => {
                   </ToggleGroupItem>)}
               </ToggleGroup>
             </CardHeader>
-            <CardContent>
+            <CardContent className="mx-[10px] px-[10px] py-[10px] my-[10px] bg-zinc-50">
               <div className="h-[600px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={data}>
