@@ -46,28 +46,103 @@ const CustomCandlestick = (props: any) => {
   const { x, y, width, height, low, high, open, close } = props;
   const isGreen = close > open;
   const color = isGreen ? "#4ade80" : "#ef4444";
-  const bodyHeight = Math.abs(open - close);
-  const bodyY = Math.min(open, close);
+  const wickY1 = y + height - (height * (high - Math.min(open, close)) / (high - low));
+  const wickY2 = y + height - (height * (Math.max(open, close) - low) / (high - low));
+  const bodyY = y + height - (height * (Math.max(open, close) - low) / (high - low));
+  const bodyHeight = Math.abs(height * (close - open) / (high - low));
 
   return (
     <g>
       <line
         x1={x + width / 2}
-        y1={y + height - (height * (high - low))}
+        y1={wickY1}
         x2={x + width / 2}
-        y2={y + height}
+        y2={wickY2}
         stroke={color}
         strokeWidth={1}
       />
       <rect
         x={x}
-        y={y + height - (height * (bodyY - low)) - (height * bodyHeight)}
+        y={bodyY}
         width={width}
-        height={Math.max(1, height * bodyHeight)}
+        height={Math.max(1, bodyHeight)}
         fill={color}
+        stroke={color}
       />
     </g>
   );
+};
+
+const generateBTCUSDMockData = (timeframe: string) => {
+  const basePrice = 45000;
+  const volatility = basePrice * 0.02; // 2% volatility
+  const points = timeframe.startsWith('M') ? 20 : 
+                timeframe.startsWith('H') ? 24 : 
+                timeframe === 'D' ? 30 : 
+                timeframe === 'M' ? 30 : 12;
+                
+  const timeInterval = timeframe === 'M1' ? 60000 : 
+                      timeframe === 'M5' ? 300000 :
+                      timeframe === 'M15' ? 900000 :
+                      timeframe === 'H1' ? 3600000 :
+                      timeframe === 'H4' ? 14400000 :
+                      timeframe === 'D' ? 86400000 :
+                      timeframe === 'M' ? 2592000000 : 31536000000;
+
+  return Array.from({ length: points }, (_, i) => {
+    const time = new Date(Date.now() - (points - 1 - i) * timeInterval).toLocaleString();
+    const trend = Math.sin(i * 0.5) * volatility;
+    const noise = (Math.random() - 0.5) * volatility;
+    
+    const open = basePrice + trend + noise;
+    const close = open + (Math.random() - 0.5) * volatility;
+    const high = Math.max(open, close) + Math.random() * (volatility * 0.5);
+    const low = Math.min(open, close) - Math.random() * (volatility * 0.5);
+
+    return {
+      time,
+      open: open.toFixed(2),
+      high: high.toFixed(2),
+      low: low.toFixed(2),
+      close: close.toFixed(2),
+    };
+  });
+};
+
+const generateForexMockData = (timeframe: string) => {
+  const basePrice = 1.2000;
+  const volatility = 0.002; // 0.2% volatility for forex
+  const points = timeframe.startsWith('M') ? 20 : 
+                timeframe.startsWith('H') ? 24 : 
+                timeframe === 'D' ? 30 : 
+                timeframe === 'M' ? 30 : 12;
+                
+  const timeInterval = timeframe === 'M1' ? 60000 : 
+                      timeframe === 'M5' ? 300000 :
+                      timeframe === 'M15' ? 900000 :
+                      timeframe === 'H1' ? 3600000 :
+                      timeframe === 'H4' ? 14400000 :
+                      timeframe === 'D' ? 86400000 :
+                      timeframe === 'M' ? 2592000000 : 31536000000;
+
+  return Array.from({ length: points }, (_, i) => {
+    const time = new Date(Date.now() - (points - 1 - i) * timeInterval).toLocaleString();
+    const trend = Math.sin(i * 0.5) * volatility;
+    const noise = (Math.random() - 0.5) * volatility;
+    
+    const open = basePrice + trend + noise;
+    const close = open + (Math.random() - 0.5) * volatility;
+    const high = Math.max(open, close) + Math.random() * (volatility * 0.5);
+    const low = Math.min(open, close) - Math.random() * (volatility * 0.5);
+
+    return {
+      time,
+      open: open.toFixed(4),
+      high: high.toFixed(4),
+      low: low.toFixed(4),
+      close: close.toFixed(4),
+    };
+  });
 };
 
 export const ForexChart = () => {
@@ -486,7 +561,7 @@ export const ForexChart = () => {
                       tickLine={{ stroke: "currentColor" }}
                       tickFormatter={(value) => 
                         selectedPair === 'BTCUSD' 
-                          ? value.toFixed(2)
+                          ? value.toFixed(0)
                           : value.toFixed(4)
                       }
                     />
@@ -497,7 +572,7 @@ export const ForexChart = () => {
                       }}
                       formatter={(value: any) => 
                         selectedPair === 'BTCUSD'
-                          ? parseFloat(value).toFixed(2)
+                          ? parseFloat(value).toFixed(0)
                           : parseFloat(value).toFixed(4)
                       }
                     />
