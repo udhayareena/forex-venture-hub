@@ -85,6 +85,7 @@ export const ForexChart = () => {
   const [currentPrice, setCurrentPrice] = useState<number>(0);
   const [openPositions, setOpenPositions] = useState<any[]>([]);
   const [totalPnL, setTotalPnL] = useState<number>(0);
+  const [visiblePriceRange, setVisiblePriceRange] = useState<{ min: number; max: number }>({ min: 0, max: 0 });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -203,27 +204,45 @@ export const ForexChart = () => {
     if (!data.length) return;
     
     const lastPrice = parseFloat(data[data.length - 1].close);
-    const priceRange = data.reduce((range, point) => {
-      const price = parseFloat(point.close);
-      return {
-        min: Math.min(range.min, price),
-        max: Math.max(range.max, price)
-      };
-    }, { min: lastPrice, max: lastPrice });
+    const prices = data.flatMap(d => [
+      parseFloat(d.high),
+      parseFloat(d.low),
+      parseFloat(d.open),
+      parseFloat(d.close)
+    ]);
+
+    const buffer = (Math.max(...prices) - Math.min(...prices)) * 0.1; // 10% padding
+    
+    setVisiblePriceRange({
+      min: Math.min(...prices) - buffer,
+      max: Math.max(...prices) + buffer
+    });
+  }, [data]);
+
+  useEffect(() => {
+    if (!data.length) return;
+    
+    const lastPrice = parseFloat(data[data.length - 1].close);
+    
+    // Check if price is outside the current visible range
+    if (lastPrice > visiblePriceRange.max || lastPrice < visiblePriceRange.min) {
+      const buffer = (lastPrice - visiblePriceRange.min) * 0.1; // 10% padding
+      setVisiblePriceRange({
+        min: lastPrice - buffer,
+        max: lastPrice + buffer
+      });
+    }
 
     // Auto-zoom if price moves outside current view
     if (zoomDomain) {
       const [startIndex, endIndex] = zoomDomain;
       const visibleData = data.slice(startIndex, endIndex + 1);
-      const visibleRange = visibleData.reduce((range, point) => {
-        const price = parseFloat(point.close);
-        return {
-          min: Math.min(range.min, price),
-          max: Math.max(range.max, price)
-        };
-      }, { min: lastPrice, max: lastPrice });
-
-      if (lastPrice > visibleRange.max || lastPrice < visibleRange.min) {
+      const visiblePrices = visibleData.flatMap(d => [
+        parseFloat(d.high),
+        parseFloat(d.low)
+      ]);
+      
+      if (lastPrice > Math.max(...visiblePrices) || lastPrice < Math.min(...visiblePrices)) {
         const newEndIndex = data.length - 1;
         const newStartIndex = Math.max(0, newEndIndex - (endIndex - startIndex));
         setZoomDomain([newStartIndex, newEndIndex]);
@@ -380,6 +399,24 @@ export const ForexChart = () => {
     ]);
   };
 
+  const getBTCUSDMockData = (timeframe: string) => {
+    const basePrice = selectedPair === 'BTCUSD' ? 45000 : 1.2000;
+    return generateMockData(timeframe).map(d => ({
+      ...d,
+      open: (parseFloat(d.open) * (basePrice / 1.2000)).toFixed(2),
+      high: (parseFloat(d.high) * (basePrice / 1.2000)).toFixed(2),
+      low: (parseFloat(d.low) * (basePrice / 1.2000)).toFixed(2),
+      close: (parseFloat(d.close) * (basePrice / 1.2000)).toFixed(2),
+    }));
+  };
+
+  useEffect(() => {
+    const newData = selectedPair === 'BTCUSD' 
+      ? getBTCUSDMockData(timeframe)
+      : generateMockData(timeframe);
+    setData(newData);
+  }, [selectedPair, timeframe]);
+
   return (
     <div className="grid grid-cols-1 gap-8">
       <div className="grid grid-cols-12 gap-4">
@@ -444,17 +481,25 @@ export const ForexChart = () => {
                       tickLine={{ stroke: "currentColor" }}
                     />
                     <YAxis
-                      domain={["auto", "auto"]}
+                      domain={[visiblePriceRange.min, visiblePriceRange.max]}
                       tick={{ fill: "currentColor" }}
                       tickLine={{ stroke: "currentColor" }}
-                      tickFormatter={(value) => value.toFixed(4)}
+                      tickFormatter={(value) => 
+                        selectedPair === 'BTCUSD' 
+                          ? value.toFixed(2)
+                          : value.toFixed(4)
+                      }
                     />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: "rgba(255, 255, 255, 0.9)",
                         border: "1px solid #ccc",
                       }}
-                      formatter={(value: any) => parseFloat(value).toFixed(4)}
+                      formatter={(value: any) => 
+                        selectedPair === 'BTCUSD'
+                          ? parseFloat(value).toFixed(2)
+                          : parseFloat(value).toFixed(4)
+                      }
                     />
                     {chartType === 'candlestick' ? (
                       <Bar
