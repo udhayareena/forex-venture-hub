@@ -177,6 +177,60 @@ export const ForexChart = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const fetchRealtimeData = async () => {
+      const lastPrice = parseFloat(data[data.length - 1].close);
+      setCurrentPrice(lastPrice);
+      
+      const updatedPositions = openPositions.map(position => {
+        const pnl = position.type === 'buy' 
+          ? (lastPrice - position.price) * position.amount * 100000
+          : (position.price - lastPrice) * position.amount * 100000;
+        return { ...position, currentPnL: pnl };
+      });
+      
+      setOpenPositions(updatedPositions);
+      setTotalPnL(updatedPositions.reduce((sum, pos) => sum + pos.currentPnL, 0));
+      
+      setEquity(userBalance + totalPnL);
+    };
+
+    const interval = setInterval(fetchRealtimeData, 1000);
+    return () => clearInterval(interval);
+  }, [openPositions, data]);
+
+  useEffect(() => {
+    if (!data.length) return;
+    
+    const lastPrice = parseFloat(data[data.length - 1].close);
+    const priceRange = data.reduce((range, point) => {
+      const price = parseFloat(point.close);
+      return {
+        min: Math.min(range.min, price),
+        max: Math.max(range.max, price)
+      };
+    }, { min: lastPrice, max: lastPrice });
+
+    // Auto-zoom if price moves outside current view
+    if (zoomDomain) {
+      const [startIndex, endIndex] = zoomDomain;
+      const visibleData = data.slice(startIndex, endIndex + 1);
+      const visibleRange = visibleData.reduce((range, point) => {
+        const price = parseFloat(point.close);
+        return {
+          min: Math.min(range.min, price),
+          max: Math.max(range.max, price)
+        };
+      }, { min: lastPrice, max: lastPrice });
+
+      if (lastPrice > visibleRange.max || lastPrice < visibleRange.min) {
+        const newEndIndex = data.length - 1;
+        const newStartIndex = Math.max(0, newEndIndex - (endIndex - startIndex));
+        setZoomDomain([newStartIndex, newEndIndex]);
+      }
+    }
+  }, [data, currentPrice]);
+
   const handleAddPair = async () => {
     const { error } = await supabase
       .from('currency_pairs')
@@ -325,28 +379,6 @@ export const ForexChart = () => {
       Math.min(dataLength - 1, center + Math.floor(newRange / 2))
     ]);
   };
-
-  const fetchRealtimeData = async () => {
-    const lastPrice = parseFloat(data[data.length - 1].close);
-    setCurrentPrice(lastPrice);
-    
-    const updatedPositions = openPositions.map(position => {
-      const pnl = position.type === 'buy' 
-        ? (lastPrice - position.price) * position.amount * 100000
-        : (position.price - lastPrice) * position.amount * 100000;
-      return { ...position, currentPnL: pnl };
-    });
-    
-    setOpenPositions(updatedPositions);
-    setTotalPnL(updatedPositions.reduce((sum, pos) => sum + pos.currentPnL, 0));
-    
-    setEquity(userBalance + totalPnL);
-  };
-
-  useEffect(() => {
-    const interval = setInterval(fetchRealtimeData, 1000);
-    return () => clearInterval(interval);
-  }, [openPositions, data]);
 
   return (
     <div className="grid grid-cols-1 gap-8">
