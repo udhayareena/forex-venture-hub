@@ -48,26 +48,26 @@ const CustomCandlestick = (props: any) => {
   const color = isGreen ? "#4ade80" : "#ef4444";
   
   const range = high - low;
-  const wickTop = y + (height * (1 - (high - low) / range));
-  const wickBottom = y + (height * (1 - (0) / range));
-  const bodyTop = y + (height * (1 - (Math.max(open, close) - low) / range));
-  const bodyBottom = y + (height * (1 - (Math.min(open, close) - low) / range));
+  const topWickY = y + height * (1 - (high - low) / range);
+  const bottomWickY = y + height * (1 - (0) / range);
+  const bodyTop = y + height * (1 - (Math.max(open, close) - low) / range);
+  const bodyBottom = y + height * (1 - (Math.min(open, close) - low) / range);
 
   return (
     <g>
       <line
         x1={x + width / 2}
-        y1={wickTop}
+        y1={topWickY}
         x2={x + width / 2}
-        y2={wickBottom}
+        y2={bottomWickY}
         stroke={color}
-        strokeWidth={2}
+        strokeWidth={1}
       />
       <rect
-        x={x}
+        x={x + width * 0.2}
         y={bodyTop}
-        width={width}
-        height={Math.max(2, bodyBottom - bodyTop)}
+        width={width * 0.6}
+        height={Math.max(1, bodyBottom - bodyTop)}
         fill={color}
         stroke={color}
       />
@@ -76,8 +76,8 @@ const CustomCandlestick = (props: any) => {
 };
 
 const generateBTCUSDMockData = (timeframe: string) => {
-  const basePrice = 97634.69; // Updated to current BTC price
-  const volatility = basePrice * 0.01; // 1% volatility
+  const basePrice = 97634.69;
+  const volatility = basePrice * 0.005;
   const points = timeframe.startsWith('M') ? 20 : 
                 timeframe.startsWith('H') ? 24 : 
                 timeframe === 'D' ? 30 : 
@@ -98,8 +98,8 @@ const generateBTCUSDMockData = (timeframe: string) => {
     
     const open = basePrice + trend + noise;
     const close = open + (Math.random() - 0.5) * volatility;
-    const high = Math.max(open, close) + Math.random() * (volatility * 0.5);
-    const low = Math.min(open, close) - Math.random() * (volatility * 0.5);
+    const high = Math.max(open, close) + Math.random() * (volatility * 0.3);
+    const low = Math.min(open, close) - Math.random() * (volatility * 0.3);
 
     return {
       time,
@@ -113,7 +113,7 @@ const generateBTCUSDMockData = (timeframe: string) => {
 
 const generateForexMockData = (timeframe: string) => {
   const basePrice = 1.2000;
-  const volatility = 0.002; // 0.2% volatility for forex
+  const volatility = 0.002;
   const points = timeframe.startsWith('M') ? 20 : 
                 timeframe.startsWith('H') ? 24 : 
                 timeframe === 'D' ? 30 : 
@@ -290,7 +290,7 @@ export const ForexChart = () => {
     const min = Math.min(...prices);
     const max = Math.max(...prices);
     const range = max - min;
-    const buffer = range * 0.1; // 10% padding
+    const buffer = range * 0.1;
     
     setVisiblePriceRange({
       min: min - buffer,
@@ -303,16 +303,14 @@ export const ForexChart = () => {
     
     const lastPrice = parseFloat(data[data.length - 1].close);
     
-    // Check if price is outside the current visible range
     if (lastPrice > visiblePriceRange.max || lastPrice < visiblePriceRange.min) {
-      const buffer = (lastPrice - visiblePriceRange.min) * 0.1; // 10% padding
+      const buffer = (lastPrice - visiblePriceRange.min) * 0.1;
       setVisiblePriceRange({
         min: lastPrice - buffer,
         max: lastPrice + buffer
       });
     }
 
-    // Auto-zoom if price moves outside current view
     if (zoomDomain) {
       const [startIndex, endIndex] = zoomDomain;
       const visibleData = data.slice(startIndex, endIndex + 1);
@@ -585,7 +583,7 @@ export const ForexChart = () => {
                       <Bar
                         dataKey="height"
                         fill="none"
-                        barSize={20}
+                        barSize={12}
                         shape={<CustomCandlestick />}
                         data={data.map(d => ({
                           ...d,
