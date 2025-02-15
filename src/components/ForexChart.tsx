@@ -46,26 +46,28 @@ const CustomCandlestick = (props: any) => {
   const { x, y, width, height, low, high, open, close } = props;
   const isGreen = close > open;
   const color = isGreen ? "#4ade80" : "#ef4444";
-  const wickY1 = y + height - (height * (high - Math.min(open, close)) / (high - low));
-  const wickY2 = y + height - (height * (Math.max(open, close) - low) / (high - low));
-  const bodyY = y + height - (height * (Math.max(open, close) - low) / (high - low));
-  const bodyHeight = Math.abs(height * (close - open) / (high - low));
+  
+  const range = high - low;
+  const wickTop = y + (height * (1 - (high - low) / range));
+  const wickBottom = y + (height * (1 - (0) / range));
+  const bodyTop = y + (height * (1 - (Math.max(open, close) - low) / range));
+  const bodyBottom = y + (height * (1 - (Math.min(open, close) - low) / range));
 
   return (
     <g>
       <line
         x1={x + width / 2}
-        y1={wickY1}
+        y1={wickTop}
         x2={x + width / 2}
-        y2={wickY2}
+        y2={wickBottom}
         stroke={color}
-        strokeWidth={1}
+        strokeWidth={2}
       />
       <rect
         x={x}
-        y={bodyY}
+        y={bodyTop}
         width={width}
-        height={Math.max(1, bodyHeight)}
+        height={Math.max(2, bodyBottom - bodyTop)}
         fill={color}
         stroke={color}
       />
@@ -74,8 +76,8 @@ const CustomCandlestick = (props: any) => {
 };
 
 const generateBTCUSDMockData = (timeframe: string) => {
-  const basePrice = 45000;
-  const volatility = basePrice * 0.02; // 2% volatility
+  const basePrice = 97634.69; // Updated to current BTC price
+  const volatility = basePrice * 0.01; // 1% volatility
   const points = timeframe.startsWith('M') ? 20 : 
                 timeframe.startsWith('H') ? 24 : 
                 timeframe === 'D' ? 30 : 
@@ -278,7 +280,6 @@ export const ForexChart = () => {
   useEffect(() => {
     if (!data.length) return;
     
-    const lastPrice = parseFloat(data[data.length - 1].close);
     const prices = data.flatMap(d => [
       parseFloat(d.high),
       parseFloat(d.low),
@@ -286,11 +287,14 @@ export const ForexChart = () => {
       parseFloat(d.close)
     ]);
 
-    const buffer = (Math.max(...prices) - Math.min(...prices)) * 0.1; // 10% padding
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const range = max - min;
+    const buffer = range * 0.1; // 10% padding
     
     setVisiblePriceRange({
-      min: Math.min(...prices) - buffer,
-      max: Math.max(...prices) + buffer
+      min: min - buffer,
+      max: max + buffer
     });
   }, [data]);
 
@@ -475,7 +479,8 @@ export const ForexChart = () => {
   };
 
   const getBTCUSDMockData = (timeframe: string) => {
-    const basePrice = selectedPair === 'BTCUSD' ? 45000 : 1.2000;
+    const basePrice = selectedPair === 'BTCUSD' 
+      ? 97634.69 : 1.2000;
     return generateMockData(timeframe).map(d => ({
       ...d,
       open: (parseFloat(d.open) * (basePrice / 1.2000)).toFixed(2),
@@ -580,6 +585,7 @@ export const ForexChart = () => {
                       <Bar
                         dataKey="height"
                         fill="none"
+                        barSize={20}
                         shape={<CustomCandlestick />}
                         data={data.map(d => ({
                           ...d,
