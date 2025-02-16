@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      balance_transfers: {
+        Row: {
+          amount: number
+          created_at: string | null
+          from_wallet: boolean
+          id: string
+          status: string | null
+          to_trading: boolean
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          from_wallet: boolean
+          id?: string
+          status?: string | null
+          to_trading: boolean
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          from_wallet?: boolean
+          id?: string
+          status?: string | null
+          to_trading?: boolean
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       currency_pairs: {
         Row: {
           base_currency: string
@@ -214,23 +244,29 @@ export type Database = {
         Row: {
           balance: number | null
           equity: number | null
+          trading_balance: number | null
           updated_at: string | null
           used_margin: number | null
           user_id: string
+          wallet_balance: number | null
         }
         Insert: {
           balance?: number | null
           equity?: number | null
+          trading_balance?: number | null
           updated_at?: string | null
           used_margin?: number | null
           user_id: string
+          wallet_balance?: number | null
         }
         Update: {
           balance?: number | null
           equity?: number | null
+          trading_balance?: number | null
           updated_at?: string | null
           used_margin?: number | null
           user_id?: string
+          wallet_balance?: number | null
         }
         Relationships: []
       }
