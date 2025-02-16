@@ -1,11 +1,11 @@
 
 import { AuthForm } from "@/components/auth/AuthForm";
-import { ChevronRight, LineChart, Shield, Zap, Download, Monitor, Phone } from "lucide-react";
+import { ChevronRight, Shield, Zap, Download, Monitor, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ForexChart } from "@/components/ForexChart";
 import { BalanceDisplay } from "@/components/trading/BalanceDisplay";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -60,7 +60,74 @@ const Index = () => {
       <section className="py-8 px-6 md:px-12 lg:px-24">
         <div className="max-w-7xl mx-auto">
           {isAuthenticated ? (
-            <ForexChart />
+            <Card className="p-6">
+              <CardHeader>
+                <CardTitle>Open Trading Account</CardTitle>
+                <CardDescription>
+                  Start your trading journey with iTradeFX
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-3 gap-6">
+                  <Card className="p-6">
+                    <h3 className="text-xl font-semibold mb-4">Standard Account</h3>
+                    <ul className="space-y-3 mb-6">
+                      <li className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-green-500" />
+                        <span>Minimum deposit: $100</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Zap className="h-5 w-5 text-green-500" />
+                        <span>Leverage up to 1:100</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Monitor className="h-5 w-5 text-green-500" />
+                        <span>Full MT4/MT5 access</span>
+                      </li>
+                    </ul>
+                    <Button className="w-full">Open Standard Account</Button>
+                  </Card>
+
+                  <Card className="p-6 border-secondary">
+                    <h3 className="text-xl font-semibold mb-4">Premium Account</h3>
+                    <ul className="space-y-3 mb-6">
+                      <li className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-secondary" />
+                        <span>Minimum deposit: $1000</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Zap className="h-5 w-5 text-secondary" />
+                        <span>Leverage up to 1:200</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Monitor className="h-5 w-5 text-secondary" />
+                        <span>Advanced trading tools</span>
+                      </li>
+                    </ul>
+                    <Button className="w-full" variant="secondary">Open Premium Account</Button>
+                  </Card>
+
+                  <Card className="p-6">
+                    <h3 className="text-xl font-semibold mb-4">VIP Account</h3>
+                    <ul className="space-y-3 mb-6">
+                      <li className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-purple-500" />
+                        <span>Minimum deposit: $10,000</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Zap className="h-5 w-5 text-purple-500" />
+                        <span>Leverage up to 1:400</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Monitor className="h-5 w-5 text-purple-500" />
+                        <span>Personal account manager</span>
+                      </li>
+                    </ul>
+                    <Button className="w-full">Open VIP Account</Button>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
           ) : (
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="space-y-8">
@@ -155,7 +222,7 @@ const Index = () => {
               </div>
               <div className="grid md:grid-cols-3 gap-8">
                 <div className="glass p-6 rounded-2xl">
-                  <LineChart className="h-10 w-10 text-secondary mb-4" />
+                  <Monitor className="h-10 w-10 text-secondary mb-4" />
                   <h3 className="text-xl font-semibold mb-2">Advanced Analytics</h3>
                   <p className="text-muted-foreground">
                     Real-time market analysis and professional trading tools
