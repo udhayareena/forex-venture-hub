@@ -1,7 +1,6 @@
 
-import { ref, set, push } from "firebase/database";
+import { ref, set, push, get } from "firebase/database";
 import { firebaseDb } from "@/integrations/firebase/client";
-import { supabase } from "@/integrations/supabase/client";
 
 export type AccountType = "standard" | "premium" | "vip";
 
@@ -17,17 +16,10 @@ export interface TradingAccount {
 
 export const createTradingAccount = async (
   accountType: AccountType, 
-  initialDeposit: number
+  initialDeposit: number,
+  userId: string
 ): Promise<string> => {
   try {
-    // Get current user
-    const { data: { session }} = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error("You must be logged in to create an account");
-    }
-
-    const userId = session.user.id;
-    
     // Determine account details based on type
     const accountDetails = getAccountDetails(accountType);
     
@@ -53,26 +45,34 @@ export const createTradingAccount = async (
     // Save account to Firebase
     await set(newAccountRef, tradingAccount);
     
-    // Also save in Supabase for backup and quick access
-    const { error } = await supabase
-      .from('trading_accounts')
-      .insert({
-        account_id: accountId,
-        user_id: userId,
-        account_type: accountType,
-        leverage: accountDetails.leverage,
-        initial_deposit: initialDeposit,
-        status: "pending"
-      });
-    
-    if (error) {
-      console.error("Error saving to Supabase:", error);
-    }
-    
     return accountId;
   } catch (error: any) {
     console.error("Error creating trading account:", error);
     throw new Error(error.message || "Failed to create trading account");
+  }
+};
+
+export const getUserTradingAccounts = async (userId: string): Promise<TradingAccount[]> => {
+  try {
+    const accountsRef = ref(firebaseDb, 'tradingAccounts');
+    const snapshot = await get(accountsRef);
+    
+    if (!snapshot.exists()) {
+      return [];
+    }
+    
+    const accounts: TradingAccount[] = [];
+    snapshot.forEach((childSnapshot) => {
+      const account = childSnapshot.val() as TradingAccount;
+      if (account.userId === userId) {
+        accounts.push(account);
+      }
+    });
+    
+    return accounts;
+  } catch (error) {
+    console.error("Error fetching trading accounts:", error);
+    return [];
   }
 };
 

@@ -11,9 +11,10 @@ interface AccountCreationDialogProps {
   isOpen: boolean;
   onClose: () => void;
   accountType: AccountType;
+  userId?: string;
 }
 
-export const AccountCreationDialog = ({ isOpen, onClose, accountType }: AccountCreationDialogProps) => {
+export const AccountCreationDialog = ({ isOpen, onClose, accountType, userId }: AccountCreationDialogProps) => {
   const [initialDeposit, setInitialDeposit] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -29,8 +30,13 @@ export const AccountCreationDialog = ({ isOpen, onClose, accountType }: AccountC
         return;
       }
       
+      if (!userId) {
+        toast.error("You must be logged in to create an account");
+        return;
+      }
+      
       // Create the account
-      const accountId = await createTradingAccount(accountType, deposit);
+      const accountId = await createTradingAccount(accountType, deposit, userId);
       
       toast.success(`Account created successfully! Your account ID is ${accountId}`);
       onClose();

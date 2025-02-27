@@ -4,28 +4,27 @@ import { ChevronRight, Shield, Zap, Download, Monitor, Phone } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { BalanceDisplay } from "@/components/trading/BalanceDisplay";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { firebaseApp } from "@/integrations/firebase/client";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { AccountCreationDialog } from "@/components/trading/AccountCreationDialog";
 import { AccountType } from "@/services/AccountService";
 
 const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedAccountType, setSelectedAccountType] = useState<AccountType>("standard");
+  const auth = getAuth(firebaseApp);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+      setUserId(user?.uid);
+    });
 
-      supabase.auth.onAuthStateChange((event, session) => {
-        setIsAuthenticated(!!session);
-      });
-    };
-
-    checkAuth();
-  }, []);
+    return () => unsubscribe();
+  }, [auth]);
   
   const openAccountDialog = (accountType: AccountType) => {
     setSelectedAccountType(accountType);
@@ -278,6 +277,7 @@ const Index = () => {
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         accountType={selectedAccountType}
+        userId={userId}
       />
     </div>
   );
