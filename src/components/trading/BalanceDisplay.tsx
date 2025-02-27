@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -7,13 +8,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
+
 type TransferDirection = "to_trading" | "to_wallet";
+
 export const BalanceDisplay = () => {
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [tradingBalance, setTradingBalance] = useState<number>(0);
   const [transferAmount, setTransferAmount] = useState<string>("");
   const [transferDirection, setTransferDirection] = useState<TransferDirection>("to_trading");
   const [isTransferring, setIsTransferring] = useState(false);
+
   const fetchBalances = async () => {
     const {
       data: {
@@ -32,6 +36,7 @@ export const BalanceDisplay = () => {
       console.error('Error fetching balances:', error);
     }
   };
+
   useEffect(() => {
     fetchBalances();
 
@@ -45,6 +50,7 @@ export const BalanceDisplay = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
   const handleTransfer = async () => {
     try {
       setIsTransferring(true);
@@ -98,5 +104,67 @@ export const BalanceDisplay = () => {
       setIsTransferring(false);
     }
   };
-  return;
+
+  return (
+    <Card className="p-6 mb-0">
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Wallet Balance</h2>
+          <p className="text-3xl font-bold text-secondary">${walletBalance.toFixed(2)}</p>
+        </div>
+
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button className="w-full">Transfer Funds</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Transfer Funds</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Transfer Direction</Label>
+                <RadioGroup
+                  value={transferDirection}
+                  onValueChange={(value: TransferDirection) => setTransferDirection(value)}
+                  className="flex gap-4 mt-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="to_trading" id="to_trading" />
+                    <Label htmlFor="to_trading">Wallet → Trading</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="to_wallet" id="to_wallet" />
+                    <Label htmlFor="to_wallet">Trading → Wallet</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div>
+                <Label htmlFor="amount">Amount</Label>
+                <Input
+                  id="amount"
+                  type="number"
+                  value={transferAmount}
+                  onChange={(e) => setTransferAmount(e.target.value)}
+                  placeholder="Enter amount"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+
+              <Button 
+                className="w-full" 
+                onClick={handleTransfer}
+                disabled={isTransferring || !transferAmount}
+              >
+                {isTransferring ? "Processing..." : "Confirm Transfer"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </Card>
+  );
 };

@@ -6,9 +6,13 @@ import { BalanceDisplay } from "@/components/trading/BalanceDisplay";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { AccountCreationDialog } from "@/components/trading/AccountCreationDialog";
+import { AccountType } from "@/services/AccountService";
 
 const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedAccountType, setSelectedAccountType] = useState<AccountType>("standard");
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -22,6 +26,11 @@ const Index = () => {
 
     checkAuth();
   }, []);
+  
+  const openAccountDialog = (accountType: AccountType) => {
+    setSelectedAccountType(accountType);
+    setIsDialogOpen(true);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -85,7 +94,12 @@ const Index = () => {
                         <span>Full MT4/MT5 access</span>
                       </li>
                     </ul>
-                    <Button className="w-full">Open Standard Account</Button>
+                    <Button 
+                      className="w-full"
+                      onClick={() => openAccountDialog("standard")}
+                    >
+                      Open Standard Account
+                    </Button>
                   </Card>
 
                   <Card className="p-6 border-secondary">
@@ -104,7 +118,13 @@ const Index = () => {
                         <span>Advanced trading tools</span>
                       </li>
                     </ul>
-                    <Button className="w-full" variant="secondary">Open Premium Account</Button>
+                    <Button 
+                      className="w-full" 
+                      variant="secondary"
+                      onClick={() => openAccountDialog("premium")}
+                    >
+                      Open Premium Account
+                    </Button>
                   </Card>
 
                   <Card className="p-6">
@@ -123,7 +143,12 @@ const Index = () => {
                         <span>Personal account manager</span>
                       </li>
                     </ul>
-                    <Button className="w-full">Open VIP Account</Button>
+                    <Button 
+                      className="w-full"
+                      onClick={() => openAccountDialog("vip")}
+                    >
+                      Open VIP Account
+                    </Button>
                   </Card>
                 </div>
               </CardContent>
@@ -247,6 +272,13 @@ const Index = () => {
           </section>
         </>
       )}
+      
+      {/* Account Creation Dialog */}
+      <AccountCreationDialog 
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        accountType={selectedAccountType}
+      />
     </div>
   );
 };
