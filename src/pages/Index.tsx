@@ -1,4 +1,3 @@
-
 import { AuthForm } from "@/components/auth/AuthForm";
 import { ChevronRight, Shield, Zap, Download, Monitor, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,40 +8,30 @@ import { firebaseApp } from "@/integrations/firebase/client";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { AccountCreationDialog } from "@/components/trading/AccountCreationDialog";
 import { AccountType } from "@/services/AccountService";
-
 const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userId, setUserId] = useState<string | undefined>(undefined);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedAccountType, setSelectedAccountType] = useState<AccountType>("standard");
   const auth = getAuth(firebaseApp);
-
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, user => {
       setIsAuthenticated(!!user);
       setUserId(user?.uid);
     });
-
     return () => unsubscribe();
   }, [auth]);
-  
   const openAccountDialog = (accountType: AccountType) => {
     setSelectedAccountType(accountType);
     setIsDialogOpen(true);
   };
-
-  return (
-    <div className="min-h-screen flex flex-col">
+  return <div className="min-h-screen flex flex-col">
       {/* Hero Section */}
       <section className="py-8 px-6 md:px-12 lg:px-24 bg-secondary/5">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <img 
-                src="/lovable-uploads/54d3d90c-1c8e-4006-82de-078744600d13.png" 
-                alt="iTradeFX Logo" 
-                className="h-12 w-auto shadow-lg rounded-lg"
-              />
+              <img src="/lovable-uploads/54d3d90c-1c8e-4006-82de-078744600d13.png" alt="iTradeFX Logo" className="h-12 w-auto shadow-lg rounded-lg" />
               <div>
                 <h1 className="text-2xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-secondary to-secondary/70">
                   iTradeFX
@@ -52,14 +41,7 @@ const Index = () => {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <BalanceDisplay />
-              {!isAuthenticated && (
-                <Button size="sm" className="bg-secondary hover:bg-secondary/90">
-                  Start Trading <ChevronRight className="ml-2 h-4 w-4" />
-                </Button>
-              )}
-            </div>
+            
           </div>
         </div>
       </section>
@@ -67,8 +49,7 @@ const Index = () => {
       {/* Main Content Section */}
       <section className="py-8 px-6 md:px-12 lg:px-24">
         <div className="max-w-7xl mx-auto">
-          {isAuthenticated ? (
-            <Card className="p-6">
+          {isAuthenticated ? <Card className="p-6">
               <CardHeader>
                 <CardTitle>Open Trading Account</CardTitle>
                 <CardDescription>
@@ -93,10 +74,7 @@ const Index = () => {
                         <span>Full MT4/MT5 access</span>
                       </li>
                     </ul>
-                    <Button 
-                      className="w-full"
-                      onClick={() => openAccountDialog("standard")}
-                    >
+                    <Button className="w-full" onClick={() => openAccountDialog("standard")}>
                       Open Standard Account
                     </Button>
                   </Card>
@@ -117,11 +95,7 @@ const Index = () => {
                         <span>Advanced trading tools</span>
                       </li>
                     </ul>
-                    <Button 
-                      className="w-full" 
-                      variant="secondary"
-                      onClick={() => openAccountDialog("premium")}
-                    >
+                    <Button className="w-full" variant="secondary" onClick={() => openAccountDialog("premium")}>
                       Open Premium Account
                     </Button>
                   </Card>
@@ -142,18 +116,13 @@ const Index = () => {
                         <span>Personal account manager</span>
                       </li>
                     </ul>
-                    <Button 
-                      className="w-full"
-                      onClick={() => openAccountDialog("vip")}
-                    >
+                    <Button className="w-full" onClick={() => openAccountDialog("vip")}>
                       Open VIP Account
                     </Button>
                   </Card>
                 </div>
               </CardContent>
-            </Card>
-          ) : (
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
+            </Card> : <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="space-y-8">
                 <div className="space-y-4">
                   <p className="text-xl font-medium text-secondary">
@@ -179,13 +148,11 @@ const Index = () => {
                 </div>
               </div>
               <AuthForm />
-            </div>
-          )}
+            </div>}
         </div>
       </section>
 
-      {isAuthenticated && (
-        <>
+      {isAuthenticated && <>
           {/* MT4 Platforms Section */}
           <section className="py-16 px-6 md:px-12 lg:px-24">
             <div className="max-w-7xl mx-auto">
@@ -269,18 +236,10 @@ const Index = () => {
               </div>
             </div>
           </section>
-        </>
-      )}
+        </>}
       
       {/* Account Creation Dialog */}
-      <AccountCreationDialog 
-        isOpen={isDialogOpen}
-        onClose={() => setIsDialogOpen(false)}
-        accountType={selectedAccountType}
-        userId={userId}
-      />
-    </div>
-  );
+      <AccountCreationDialog isOpen={isDialogOpen} onClose={() => setIsDialogOpen(false)} accountType={selectedAccountType} userId={userId} />
+    </div>;
 };
-
 export default Index;
